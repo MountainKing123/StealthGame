@@ -11,9 +11,21 @@ class AFPSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+protected:
+	
+	UPROPERTY(EditDefaultsOnly, Category="Spectating")
+	TSubclassOf<AActor> SpectatingViewPointClass;
+
 public:
 
 	AFPSGameMode();
+
+public:
+
+	void CompleteMission(APawn* InstigatorPawn);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="GameMode")
+	void OnMissionCompleted(APawn* InstigatorPawn);
 };
 
 
