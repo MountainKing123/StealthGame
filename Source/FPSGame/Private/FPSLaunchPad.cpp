@@ -54,26 +54,22 @@ void AFPSLaunchPad::HandleOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	FVector launchDirection = ArrowComp->GetComponentTransform().GetRotation().Vector();
 	launchDirection.Normalize();
 	
-	if(OtherActor->IsA(AFPSCharacter::StaticClass()) && OtherActor->IsRootComponentMovable())
+	if(OtherActor->IsA(AFPSCharacter::StaticClass()))
 	{
 		AFPSCharacter* launchableCharacter = Cast<AFPSCharacter>(OtherActor);
 		if(launchableCharacter != nullptr)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("Overlapping Component: %s"), *OtherActor->GetName()));
-			launchableCharacter->LaunchCharacter(launchDirection * this->LaunchForce, false, false);
+			// GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("Overlapping Component: %s"), *OtherActor->GetName()));
+			
+			launchableCharacter->LaunchCharacter(launchDirection * this->LaunchForce, true, true);
 			this->PlayEffects();
-		}
-		
-	}else if(OtherActor->IsA(AStaticMeshActor::StaticClass()) && OtherActor->IsRootComponentMovable())
+		}	
+	}else if(OtherComp !=  nullptr && OtherComp->IsSimulatingPhysics())
 	{
-		UStaticMeshComponent* launchableMesh =  Cast<UStaticMeshComponent>(OtherActor->GetRootComponent());
-		if(launchableMesh != nullptr)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("Overlapping Component: %s"), *OtherActor->GetName()));
-			launchableMesh->AddForce(launchDirection * this->LaunchForce * this->MeshForceMultiplier * launchableMesh->GetMass());
-			this->PlayEffects();		
-		}
+		// GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("Overlapping Component: %s"), *OtherActor->GetName()));
 		
+		OtherComp->AddForce(launchDirection * this->LaunchForce * this->MeshForceMultiplier * OtherComp->GetMass());
+		this->PlayEffects();
 	}
 }
 
