@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "FPSILaunchable.h"
 #include "GameFramework/Character.h"
 #include "FPSCharacter.generated.h"
 
@@ -15,7 +17,7 @@ class UAnimSequence;
 
 
 UCLASS()
-class AFPSCharacter : public ACharacter
+class AFPSCharacter : public ACharacter, public IFPSILaunchable
 {
 	GENERATED_BODY()
 
