@@ -63,6 +63,7 @@ void AFPSLaunchPad::HandleOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 			launchableCharacter->LaunchCharacter(launchDirection * this->LaunchForce, false, false);
 			this->PlayEffects();
 		}
+		
 	}else if(OtherActor->IsA(AStaticMeshActor::StaticClass()) && OtherActor->IsRootComponentMovable())
 	{
 		UStaticMeshComponent* launchableMesh =  Cast<UStaticMeshComponent>(OtherActor->GetRootComponent());
@@ -72,6 +73,7 @@ void AFPSLaunchPad::HandleOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 			launchableMesh->AddForce(launchDirection * this->LaunchForce * this->MeshForceMultiplier * launchableMesh->GetMass());
 			this->PlayEffects();		
 		}
+		
 	}
 }
 
