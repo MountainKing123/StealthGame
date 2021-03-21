@@ -40,7 +40,7 @@ void AFPSAIGuard::OnPawnSeen(APawn* seenPawn)
 	AFPSGameMode* gm = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 	if(gm)
 	{
-		gm->CompleteMission(seenPawn, true);
+		gm->CompleteMission(seenPawn, false);
 	}
 
 	SetGuardState(EAIState::Alerted);
