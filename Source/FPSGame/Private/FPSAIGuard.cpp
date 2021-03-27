@@ -22,15 +22,15 @@ AFPSAIGuard::AFPSAIGuard()
 	this->PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	this->PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
 
-	this->GuardState = EAIState::Idle;
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
 void AFPSAIGuard::BeginPlay()
 {
-	this->AIController = Cast<AFPSAIController>(this->GetController());
-	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(this->GuardState));
-	
+	this->SetAIController();
+	this->SetGuardState(EAIState::Idle);
 	Super::BeginPlay();
 
 	this->OriginalRotation = this->GetActorRotation();
@@ -49,10 +49,7 @@ void AFPSAIGuard::OnPawnSeen(APawn* seenPawn)
 		gm->CompleteMission(seenPawn, false);
 	}
 
-	SetGuardState(EAIState::Alerted);
-	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(this->GuardState));
-	uint8 currentState = this->AIController->BlackboardComp->GetValueAsEnum("GuardState");
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Location is: %i"), currentState));
+	this->SetGuardState(EAIState::Alerted);
 }
 
 // This will only be invoked, if Pawn has not been seen already.
@@ -76,18 +73,7 @@ void AFPSAIGuard::OnNoiseHeard(APawn* heardPawn, const FVector& Location, float 
 	GetWorldTimerManager().SetTimer(timerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
 
 	this->SetGuardState(EAIState::Suspicios);
-	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(this->GuardState));
-	uint8 currentState = this->AIController->BlackboardComp->GetValueAsEnum("GuardState");
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Location is: %i"), currentState));
-}
 
-void AFPSAIGuard::SetGuardState(EAIState newState)
-{
-	if(GuardState == newState)
-		return;
-
-	GuardState = newState;
-	OnStateChanged(GuardState);
 }
 
 void AFPSAIGuard::ResetOrientation()
@@ -98,9 +84,34 @@ void AFPSAIGuard::ResetOrientation()
 	this->SetActorRotation(this->OriginalRotation);
 
 	this->SetGuardState(EAIState::Idle);
-	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(this->GuardState));
 }
 
+void AFPSAIGuard::SetGuardState_Implementation(EAIState newState)
+{
+	if(GuardState == newState)
+		return;
+
+	GuardState = newState;
+	OnStateChanged(GuardState);
+	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(newState));
+	uint8 currentState = this->AIController->BlackboardComp->GetValueAsEnum("GuardState");
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Location is: %i"), currentState));
+}
+
+bool AFPSAIGuard::SetGuardState_Validate(EAIState newState)
+{
+	return true;
+}
+
+void AFPSAIGuard::SetAIController_Implementation()
+{
+	this->AIController = Cast<AFPSAIController>(this->GetController());
+}
+
+bool AFPSAIGuard::SetAIController_Validate()
+{
+	return true;
+}
 
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)

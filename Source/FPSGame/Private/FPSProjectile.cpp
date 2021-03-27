@@ -29,6 +29,9 @@ AFPSProjectile::AFPSProjectile()
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 
@@ -40,7 +43,9 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 	}
 
-	this->MakeNoise(1.0f, this->GetInstigator());
-
-	this->Destroy();
+	if(this->GetLocalRole() == ROLE_Authority)
+	{
+		this->MakeNoise(1.0f, this->GetInstigator());
+		this->Destroy();
+	}
 }

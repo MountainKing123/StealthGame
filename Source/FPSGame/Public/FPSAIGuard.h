@@ -56,10 +56,14 @@ protected:
 	UFUNCTION()
 	void OnNoiseHeard(APawn* heardPawn, const FVector& Location, float Volume);
 
+	UFUNCTION(Server, Reliable, WithValidation)
 	void SetGuardState(EAIState newState);
 
 	UFUNCTION(BlueprintImplementableEvent, Category="AI")
 	void OnStateChanged(EAIState newState);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void SetAIController();
 	
 public:	
 	// Called every frame
