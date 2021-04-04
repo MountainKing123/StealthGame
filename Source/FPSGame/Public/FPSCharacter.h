@@ -54,7 +54,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay")
 	UAnimSequence* FireAnimation;
 
-	UPROPERTY(BlueprintReadOnly, Category="Gameplay")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category="Gameplay")
 	bool bIsCarryingObjective;
 protected:
 	
@@ -78,6 +78,8 @@ public:
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return CameraComponent; }
+
+	virtual void Tick(float DeltaTime) override;
 
 };
 

@@ -23,6 +23,8 @@ AFPSObjectiveActor::AFPSObjectiveActor()
 	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	SphereComp->SetupAttachment(MeshComp);
+
+	this->SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -38,22 +40,20 @@ void AFPSObjectiveActor::PlayEffects()
 	UGameplayStatics::SpawnEmitterAtLocation(this, PickupFX, GetActorLocation());
 }
 
-// Called every frame
-// void AFPSObjectiveActor::Tick(float DeltaTime)
-// {
-// 	Super::Tick(DeltaTime);
-// }
-
 void AFPSObjectiveActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 	
 	PlayEffects();
-	AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
-	if(MyCharacter)
+
+	if(this->GetLocalRole() == ROLE_Authority)
 	{
-		MyCharacter->bIsCarryingObjective = true;
-		Destroy();
+		AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
+		if(MyCharacter)
+		{
+			MyCharacter->bIsCarryingObjective = true;
+			Destroy();
+		}		
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "FPSAIController.h"
 #include "FPSGameMode.h"
+#include "UnrealNetwork.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -76,6 +77,11 @@ void AFPSAIGuard::OnNoiseHeard(APawn* heardPawn, const FVector& Location, float 
 
 }
 
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState); 
+}
+
 void AFPSAIGuard::ResetOrientation()
 {
 	if(this->GuardState == EAIState::Alerted)
@@ -92,10 +98,13 @@ void AFPSAIGuard::SetGuardState_Implementation(EAIState newState)
 		return;
 
 	GuardState = newState;
-	OnStateChanged(GuardState);
+	this->OnRep_GuardState();
+	
 	this->AIController->BlackboardComp->SetValueAsEnum("GuardState", static_cast<uint8>(newState));
-	uint8 currentState = this->AIController->BlackboardComp->GetValueAsEnum("GuardState");
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Location is: %i"), currentState));
+
+	// Debug
+	// uint8 currentState = this->AIController->BlackboardComp->GetValueAsEnum("GuardState");
+	// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Location is: %i"), currentState));
 }
 
 bool AFPSAIGuard::SetGuardState_Validate(EAIState newState)
@@ -119,5 +128,13 @@ void AFPSAIGuard::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void AFPSAIGuard::GetLifetimeReplicatedProps( TArray< class FLifetimeProperty > & OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
+}
+
 
 

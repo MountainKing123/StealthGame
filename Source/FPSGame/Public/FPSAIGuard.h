@@ -37,6 +37,7 @@ protected:
 
 	FTimerHandle timerHandle_ResetOrientation;
 
+	UPROPERTY(ReplicatedUsing=OnRep_GuardState)
 	EAIState GuardState;
 		
 public:
@@ -55,6 +56,9 @@ protected:
 
 	UFUNCTION()
 	void OnNoiseHeard(APawn* heardPawn, const FVector& Location, float Volume);
+
+	UFUNCTION()
+	void OnRep_GuardState();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void SetGuardState(EAIState newState);
