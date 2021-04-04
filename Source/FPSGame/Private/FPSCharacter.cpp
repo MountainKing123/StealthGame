@@ -32,6 +32,8 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
 
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT ("NoiseEmitter"));
+
+	CurrentHealth = MaxHealth;
 	
 	SetReplicates(true);
     SetReplicateMovement(true);
@@ -51,6 +53,52 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AFPSCharacter::OnHealthUpdate()
+{
+	if(IsLocallyControlled())
+	{
+		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHealth);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, healthMessage);
+
+		if(CurrentHealth <= 0)
+		{
+			FString deathMessage = FString::Printf(TEXT("You have been killed."));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+		}
+		
+		//Server-specific functionality
+		if (GetLocalRole() == ROLE_Authority)
+		{
+			FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHealth);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		}
+	}
+}
+
+void AFPSCharacter::SetCurrentHealth(float healthValue)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
+		OnHealthUpdate();
+	}
+}
+
+float AFPSCharacter::TakeDamage(float DamageTaken, FDamageEvent const& DamageEvent, AController* EventInstigator,
+								AActor* DamageCauser)
+{
+	float damageApplied = CurrentHealth - DamageTaken;
+	SetCurrentHealth(damageApplied);
+	
+	return damageApplied;
+}
+
+void AFPSCharacter::OnRep_CurrentHealth()
+{
+	OnHealthUpdate();
+	OnHealthChanged(CurrentHealth);
 }
 
 void AFPSCharacter::Tick(float DeltaTime)
@@ -114,7 +162,6 @@ bool AFPSCharacter::ServerFire_Validate()
 	return true;
 }
 
-
 void AFPSCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
@@ -139,4 +186,5 @@ void AFPSCharacter::GetLifetimeReplicatedProps( TArray< class FLifetimeProperty 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AFPSCharacter, bIsCarryingObjective);
+	DOREPLIFETIME(AFPSCharacter, CurrentHealth);
 }

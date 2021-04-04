@@ -1,8 +1,11 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "FPSProjectile.h"
+
+#include "FPSCharacter.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AFPSProjectile::AFPSProjectile() 
 {
@@ -30,6 +33,9 @@ AFPSProjectile::AFPSProjectile()
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
 
+	DamageType = UDamageType::StaticClass();
+	Damage = 10.0f;
+
 	SetReplicates(true);
 	SetReplicateMovement(true);
 }
@@ -45,6 +51,13 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 
 	if(this->GetLocalRole() == ROLE_Authority)
 	{
+		AFPSCharacter* Character = Cast<AFPSCharacter>(OtherActor);
+		
+		if(Character && OtherActor != this->GetOwner())
+		{
+			UGameplayStatics::ApplyPointDamage(OtherActor, Damage, NormalImpulse, Hit, GetInstigator()->Controller, this, DamageType);
+		}
+		
 		this->MakeNoise(1.0f, this->GetInstigator());
 		this->Destroy();
 	}

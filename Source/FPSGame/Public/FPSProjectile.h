@@ -39,5 +39,11 @@ public:
 
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage")
+	TSubclassOf<class UDamageType> DamageType;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Damage")
+	float Damage;
 };
 
