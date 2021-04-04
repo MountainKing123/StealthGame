@@ -39,6 +39,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	UPawnNoiseEmitterComponent* NoiseEmitterComponent;
 
+	FTimerHandle DestroyTimerHandle;
+	
 public:
 	AFPSCharacter();
 
@@ -83,6 +85,11 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category="Health")
     void OnHealthChanged(float newHealth);
+
+	void Die();
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MultiDie();
 	
 public:
 	/** Returns Mesh1P subobject **/

@@ -1,6 +1,8 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "FPSCharacter.h"
+
+#include "FPSGameMode.h"
 #include "FPSProjectile.h"
 #include "UnrealNetwork.h"
 #include "Animation/AnimInstance.h"
@@ -9,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 AFPSCharacter::AFPSCharacter()
@@ -66,7 +69,9 @@ void AFPSCharacter::OnHealthUpdate()
 		{
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
-		}
+			Die();
+			// SetCurrentHealth(100.0f);
+		}	
 		
 		//Server-specific functionality
 		if (GetLocalRole() == ROLE_Authority)
@@ -75,6 +80,33 @@ void AFPSCharacter::OnHealthUpdate()
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 		}
 	}
+}
+
+void AFPSCharacter::Die()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		AFPSGameMode* gM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		gM->Respawn(this->GetController());
+		
+		MultiDie();
+
+		GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &AFPSCharacter::BeginDestroy, 3.0f, false);
+	}
+}
+
+void AFPSCharacter::MultiDie_Implementation()
+{
+	// Activate ragdoll on death. ToDo: Replace 1P Mesh with 3P Mesh.
+	GetCapsuleComponent()->DestroyComponent();
+	this->GetCharacterMovement()->DisableMovement();
+	this->GetMesh1P()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	this->GetMesh1P()->SetAllBodiesSimulatePhysics(true);
+}
+
+bool AFPSCharacter::MultiDie_Validate()
+{
+	return true;
 }
 
 void AFPSCharacter::SetCurrentHealth(float healthValue)

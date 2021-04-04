@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "FPSGameMode.generated.h"
 
+class AFPSPlayerController;
+class APlayerStart;
+
 UCLASS()
 class AFPSGameMode : public AGameModeBase
 {
@@ -16,11 +19,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Spectating")
 	TSubclassOf<AActor> SpectatingViewPointClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Spawn")
+	TArray<APlayerStart*> SpawnPoints;
+
+	FTimerHandle RespawnTimerHandle;
+
 public:
 
 	AFPSGameMode();
 
+protected:
+	APlayerStart* GetSpawnPoints();
+
 public:
+	UFUNCTION()
+	void Spawn(AController* Controller);
+	
+	void Respawn(AController* Controller);
 
 	void CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess);
 
